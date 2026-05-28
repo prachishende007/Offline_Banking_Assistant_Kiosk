@@ -1,94 +1,79 @@
-# AI Bank Assistance - Offline-First Banking Assistant
+# AI Bank Assistance
 
-## Overview
-AI Bank Assistance is a multilingual banking assistant that answers account and FAQ queries in English, Hindi, and Marathi.
+## Project Overview
+AI Bank Assistance is an offline-first multilingual banking assistant built for English, Hindi, and Marathi users. It combines deterministic banking data with FAQ retrieval, optional language refinement, and voice synthesis to deliver a conversational banking experience.
 
-It combines:
-- Deterministic banking data from local JSON files
-- Vector search over FAQ embeddings
-- Optional LLM polish via Gemini or Indic-LLaMA
-- Flask backend APIs and two UI options
+The project includes:
+- A Flask backend serving banking APIs, chat, and TTS
+- Demo account, transaction, and FAQ datasets in `data/`
+- Vector search and embedding support in `embeddings/`
+- A Flask web UI under `web/`
+- An optional React + Vite frontend in `frontend/`
 
-## What changed
-- Banking facts are always loaded from local JSON data
-- Account and transaction queries are deterministic
-- Offline TTS support via `edge-tts`
-- Frontend can run in the browser using the Flask UI or React + Vite
+## Key Features
+- Multilingual chat support: English, Hindi, Marathi
+- Deterministic account and transaction responses from JSON data
+- FAQ retrieval using vector embeddings
+- Configurable LLM refinement for reply polishing
+- Voice output using `edge-tts` with fallback to `gTTS`
+- Both Flask-rendered UI and React frontend options
+
+## Architecture
+- `app.py`: main Flask app, REST APIs, login/session handling, chat, and TTS endpoints
+- `data/`: demo JSON files for users, accounts, transactions, and general FAQs
+- `embeddings/`: search and embedding management for FAQ retrieval
+- `web/`: templates and static assets for the Flask UI
+- `frontend/`: React/Vite application for a richer client interface
 
 ## Prerequisites
 - Python 3.10+
-- pip
-- Node.js 18+ only if you want to run the React frontend in `frontend/`
+- `pip`
+- Node.js 18+ if using the React frontend
 
-> If `node --version` or `npm --version` fails, install Node.js from https://nodejs.org and restart your terminal.
+## Backend Setup
+1. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Start the backend:
+   ```bash
+   python app.py
+   ```
+3. Open the Flask UI:
+   - `http://127.0.0.1:5000`
 
-## Quick Start: Backend only
-This is the easiest way to run the app if you do not have Node.js installed.
+## React Frontend Setup (Optional)
+1. Install Node.js and npm.
+2. Install frontend dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+3. Run the backend from the project root:
+   ```bash
+   python app.py
+   ```
+4. Start the React frontend:
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+5. Open the React app:
+   - `http://127.0.0.1:3000`
 
-1) Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+The React frontend proxies API calls to the backend at `http://127.0.0.1:5000`.
 
-2) Run the backend:
-```bash
-python app.py
-```
+## Optional Refinement Modes
+The assistant can use an optional language model refiner for answer polishing.
 
-3) Open the app in your browser:
-- `http://127.0.0.1:5000`
-
-This uses the Flask-served UI in `web/templates` and `web/static`.
-
-## Full Setup: React frontend
-If you want the React/Vite UI, you must install Node.js/npm first.
-
-1) Install Node.js
-- Download and install the LTS version from: https://nodejs.org
-- Or use Windows package manager:
-  ```powershell
-  winget install OpenJS.NodeJS
-  ```
-
-2) Verify Node is installed:
-```bash
-node --version
-npm --version
-```
-
-3) Install frontend dependencies:
-```bash
-cd frontend
-npm install
-```
-
-4) Start backend in the project root:
-```bash
-python app.py
-```
-
-5) Start the React frontend:
-```bash
-cd frontend
-npm run dev
-```
-
-6) Open the frontend in your browser:
-- `http://127.0.0.1:3000`
-
-The React app proxies API calls to the backend at `http://127.0.0.1:5000`.
-
-## Environment modes
-The app supports two optional refinement modes:
-
-### Gemini mode (recommended)
+### Gemini mode
 ```powershell
 $env:GEMINI_ENABLED="true"
 $env:GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
 $env:GEMINI_MODEL="gemini-1.5-flash"
 ```
 
-### Indic-LLaMA mode (offline)
+### Indic-LLaMA offline mode
 ```powershell
 $env:GEMINI_ENABLED="false"
 $env:INDIC_LLM_ENABLED="true"
@@ -96,108 +81,51 @@ $env:INDIC_LLM_MODEL="ai4bharat/Indic-LLaMA-7B"
 $env:INDIC_LLM_DEVICE="cpu"
 ```
 
-> CPU inference for a 7B model may be slow. Use `cuda` only if you have a compatible NVIDIA GPU.
+## API Endpoints
+- `GET /api/health` — service health check
+- `GET /api/model-status` — refiner/model configuration status
+- `POST /api/login` — authenticate with mobile number
+- `POST /api/logout` — clear session
+- `POST /api/chat` — submit banking questions
+- `POST /api/tts` — generate voice replies
+- `POST /api/tts-stop` — request TTS stop
 
-## Run backend with chosen mode
-```bash
-python app.py
-```
-
-## Verify backend status
-Open:
-- `http://127.0.0.1:5000/api/health`
-- `http://127.0.0.1:5000/api/model-status`
-
-## Folder structure
-- `app.py`: Flask backend and API routes
-- `data/`: demo JSON data for users, accounts, transactions, and general FAQ
-- `embeddings/`: embedding creation and search logic
-- `web/`: Flask-rendered UI templates and static files
-- `frontend/`: React + Vite frontend UI
+## Demo Credentials
+Use any number from `data/users.json` to log in.
+Example mobile number:
+- `9000007124`
 
 ## Notes
-- `python -m venv .venv` only manages Python dependencies. It does not install Node or npm.
-- If `npm` is not recognized, install Node.js and restart your terminal.
-- The backend can run independently of the React frontend.
+- The backend runs independently of the React frontend.
+- `embeddings/` contains vector search and retrieval logic used by FAQ chat.
+- `web/` contains the default Flask UI served by `app.py`.
+- For production, set a stronger secret key via `BANK_ASSISTANT_SECRET`.
 
-## Useful commands
+## Folder Summary
+- `app.py` — Flask application and endpoints
+- `data/` — sample bank data for users, accounts, transactions, and FAQs
+- `embeddings/` — embedding creation, search, and query handling
+- `web/` — Flask templates and static frontend assets
+- `frontend/` — React + Vite frontend app
+
+## Running the Project
 Backend only:
 ```bash
 pip install -r requirements.txt
 python app.py
 ```
 
-Frontend setup (after Node install):
+React frontend (optional):
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-This creates/updates vector data under `embeddings/db/`.
+Open the frontend UI:
+- Flask UI: `http://127.0.0.1:5000`
+- React UI: `http://127.0.0.1:3000`
 
-### 6) Run backend (Flask)
-```bash
-python app.py
-```
-
-Backend runs at: `http://127.0.0.1:5000`
-
-### 7) Run UI
-
-Option A: Flask web UI
-- Open: `http://127.0.0.1:5000`
-
-Option B: React frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-- Open: `http://127.0.0.1:3000`
-- Vite proxy forwards `/api` calls to `http://127.0.0.1:5000`
-
-## Demo Login
-
-Use any mobile number from `data/users.json`.
-Example:
-- `9000007124`
-
-## Notes
-- Set a stronger secret key in production:
-  - Environment variable: `BANK_ASSISTANT_SECRET`
-- Keep `embeddings/db/` out of git if you want smaller repository size for deployment workflows.
-
-## Troubleshooting
-
-### Random/wrong answers
-- ✅ FIXED: Banking facts now come ONLY from JSON, LLM cannot hallucinate
-- Verify: Check `/api/model-status` shows `"configured_mode": "indic-llama"` (offline mode)
-
-### Account details not showing
-- ✅ FIXED: Intent detection updated for "मेरा अकाउंट नंबर क्या है" style queries
-- Demo numbers: Any from `data/users.json` (e.g., `9000010001`)
-
-### TTS too long (won't stop)
-- ✅ FIXED: Click **STOP** button to interrupt immediately
-
-### Works offline?
-- ✅ YES: Fully offline with Indic-LLaMA on CPU/GPU
-- Verify: No internet needed after first model download
-
-### General troubleshooting
-- Login fails: Mobile must exist in `data/users.json`
-- Chat fails: Ensure embeddings created: `python embeddings/create_embeddings.py`
-- TTS fails (offline): Rare; check gTTS alternatives
-- React can't reach backend: Flask must run on `127.0.0.1:5000`
-
-## Recent Fixes (for Hackathon)
-
-1. **No more hallucination:** Banking facts from JSON only
-2. **Better intent detection:** Account number queries now work in Hindi/Marathi
-3. **Full offline:** Works with local Indic-LLaMA, zero internet dependency
-4. **Stop button:** TTS can be interrupted immediately
-5. **Refinement safe:** LLM only polishes language, never changes facts
 
 ## API Endpoints
 

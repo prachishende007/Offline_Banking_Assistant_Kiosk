@@ -1,12 +1,17 @@
 import os
 from io import BytesIO
+import base64
+import asyncio
+import edge_tts
 
 from flask import Flask, jsonify, render_template, request, send_file, session
+from flask_cors import CORS
 from gtts import gTTS
 
 from embeddings.search import USER_BY_MOBILE, answer_query, detect_language, get_refiner_status
 
 app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
+CORS(app, supports_credentials=True)
 app.config["SECRET_KEY"] = os.getenv("BANK_ASSISTANT_SECRET", "dev-secret-change-me")
 
 
@@ -79,9 +84,13 @@ def chat() -> tuple:
     if resolved_lang not in {"en", "hi", "mr"}:
         resolved_lang = "en"
 
-    answer = answer_query(user, message, lang_hint=resolved_lang)
+    answer, related_questions = answer_query(user, message, lang_hint=resolved_lang)
 
-    return jsonify({"answer": answer, "language": resolved_lang}), 200
+    return jsonify({
+        "answer": answer,
+        "language": resolved_lang,
+        "related_questions": related_questions
+    }), 200
 
 
 @app.post("/api/tts")
@@ -101,34 +110,54 @@ def tts() -> tuple:
     if lang not in {"en", "hi", "mr"}:
         lang = "en"
 
-    gtts_lang = "mr" if lang == "mr" else ("hi" if lang == "hi" else "en")
-    tld = "co.in"
+    # Map languages to edge-tts voice names
+    voice_map = {
+        "en": "en-IN-NeerjaNeural",  # Default English voice
+        "hi": "hi-IN-SwaraNeural",   # Default Hindi voice
+        "mr": "mr-IN-AarohiNeural"   # Default Marathi voice
+    }
+    
+    # Cycle through different voices for variety in dynamic mode
     if voice_mode == "dynamic":
         turn = int(session.get("tts_turn", 0))
         session["tts_turn"] = turn + 1
-        tld_options = {
-            "en": ["co.in", "co.uk", "com.au", "us"],
-            "hi": ["co.in", "co.uk"],
-            "mr": ["co.in", "co.uk"],
+        
+        voices_by_lang = {
+            "en": ["en-IN-NeerjaNeural", "en-IN-PrabhatNeural"],
+            "hi": ["hi-IN-SwaraNeural", "hi-IN-MadhurNeural"],
+            "mr": ["mr-IN-AarohiNeural", "mr-IN-ManoharNeural"]
         }
-        candidates = tld_options.get(gtts_lang, ["co.in"])
-        tld = candidates[turn % len(candidates)]
+        available_voices = voices_by_lang.get(lang, voices_by_lang["en"])
+        voice_name = available_voices[turn % len(available_voices)]
+    else:
+        voice_name = voice_map.get(lang, voice_map["en"])
 
     try:
-        tts_engine = gTTS(text=text, lang=gtts_lang, tld=tld, slow=False)
-        audio = BytesIO()
-        tts_engine.write_to_fp(audio)
+        # Use edge-tts for offline TTS
+        async def generate_tts():
+            communicate = edge_tts.Communicate(text, voice_name)
+            audio_data = b""
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio" and "data" in chunk:
+                    audio_data += chunk["data"]
+            return audio_data
+
+        audio_bytes = asyncio.run(generate_tts())
+        audio = BytesIO(audio_bytes)
         audio.seek(0)
-    except Exception:
+        
+    except Exception as e:
+        # Fallback to gTTS if edge-tts fails
         try:
+            gtts_lang = "mr" if lang == "mr" else ("hi" if lang == "hi" else "en")
             tts_engine = gTTS(text=text, lang=gtts_lang, tld="co.in", slow=False)
             audio = BytesIO()
             tts_engine.write_to_fp(audio)
             audio.seek(0)
         except Exception:
-            return jsonify({"error": "TTS generation failed"}), 500
+            return jsonify({"error": f"TTS generation failed: {str(e)}"}), 500
 
-    return send_file(audio, mimetype="audio/mpeg", as_attachment=False, download_name="reply.mp3")
+    return send_file(audio, mimetype="audio/mpeg", as_attachment=False, download_name="reply.mp3"), 200
 
 
 @app.post("/api/tts-stop")

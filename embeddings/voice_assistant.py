@@ -1,6 +1,8 @@
 import importlib
 import os
 import tempfile
+import asyncio
+import edge_tts
 
 from search import USER_BY_MOBILE, answer_query, detect_language
 
@@ -109,6 +111,109 @@ def speak_with_gtts(gtts_module, playsound_func, text: str, lang: str) -> bool:
                 pass
 
 
+async def speak_with_edge_tts(text: str, lang: str) -> bool:
+    cleaned = " ".join(text.splitlines()).strip()
+    if not cleaned:
+        return True
+
+    # Map languages to edge-tts voice names
+    voice_map = {
+        "en": "en-IN-NeerjaNeural",
+        "hi": "hi-IN-SwaraNeural", 
+        "mr": "mr-IN-AarohiNeural"
+    }
+    voice_name = voice_map.get(lang, "en-IN-NeerjaNeural")
+
+    tmp_path = None
+    try:
+        communicate = edge_tts.Communicate(cleaned, voice_name)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+            tmp_path = f.name
+        
+        await communicate.save(tmp_path)
+        
+        # Play the audio
+        playsound_module = importlib.import_module("playsound")
+        playsound_func = playsound_module.playsound
+        playsound_func(tmp_path)
+        return True
+        
+    except Exception:
+        return False
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
+def speak_with_sarvam(text: str, lang: str) -> bool:
+    cleaned = " ".join(text.splitlines()).strip()
+    if not cleaned:
+        return True
+
+    sarvam_api_key = os.getenv("SARVAM_API_KEY", "").strip()
+    if not sarvam_api_key:
+        return False
+
+    # Map languages to Sarvam BCP-47 codes
+    lang_map = {
+        "en": "en-IN",
+        "hi": "hi-IN", 
+        "mr": "mr-IN"
+    }
+    target_lang = lang_map.get(lang, "en-IN")
+
+    tmp_path = None
+    try:
+        url = "https://api.sarvam.ai/text-to-speech"
+        headers = {
+            "api-subscription-key": sarvam_api_key,
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "text": cleaned,
+            "target_language_code": target_lang,
+            "speaker": "shubh",
+            "model": "bulbul:v3",
+            "pace": 1.0,
+            "loudness": 1.0,
+            "speech_sample_rate": 24000
+        }
+        
+        response = requests.post(url, headers=headers, json=data, timeout=30)
+        response.raise_for_status()
+        
+        result = response.json()
+        if "audios" not in result or not result["audios"]:
+            return False
+            
+        # Decode base64 audio and save to temp file
+        audio_base64 = result["audios"][0]
+        audio_data = base64.b64decode(audio_base64)
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+            tmp_path = f.name
+            f.write(audio_data)
+        
+        # Play the audio
+        playsound_module = importlib.import_module("playsound")
+        playsound_func = playsound_module.playsound
+        playsound_func(tmp_path)
+        return True
+        
+    except Exception:
+        return False
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
 def _normalize_for_score(text: str) -> str:
     return " ".join(text.lower().split())
 
@@ -202,13 +307,22 @@ def main() -> None:
         print("Install with: pip install SpeechRecognition pyttsx3 PyAudio")
         return
 
-    # Optional multilingual TTS backend for Hindi/Marathi.
+    # Optional multilingual TTS backends
     gtts = None
     playsound_func = None
+    edge_tts_available = False
+    try:
+        import edge_tts
+        edge_tts_available = True
+        print("✓ Edge TTS (offline) available - using Sarvam Edge equivalent")
+    except ModuleNotFoundError:
+        print("Tip: Install 'pip install edge-tts' for better offline TTS")
+    
     try:
         gtts = importlib.import_module("gtts")
         playsound_module = importlib.import_module("playsound")
         playsound_func = playsound_module.playsound
+        print("✓ gTTS available for online TTS fallback")
     except ModuleNotFoundError:
         print("Tip: For better Hindi/Marathi voice, install: pip install gTTS playsound==1.2.2")
 
@@ -294,8 +408,12 @@ def main() -> None:
         print(f"You said: {text}")
         print(f"Assistant: {answer}")
 
-        # Prefer cloud TTS for Hindi/Marathi when available; fallback to local TTS.
-        if lang in {"hi", "mr"} and gtts and playsound_func:
+        # Prefer offline TTS in order: edge-tts (Sarvam Edge equivalent), Sarvam API, gTTS, pyttsx3
+        if edge_tts_available and asyncio.run(speak_with_edge_tts(answer, lang)):
+            pass  # Success with edge-tts
+        elif speak_with_sarvam(answer, lang):
+            pass  # Success with Sarvam API
+        elif lang in {"hi", "mr"} and gtts and playsound_func:
             ok = speak_with_gtts(gtts, playsound_func, answer, lang)
             if not ok:
                 speak(pyttsx3, answer, lang)

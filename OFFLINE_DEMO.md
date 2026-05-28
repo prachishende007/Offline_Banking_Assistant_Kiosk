@@ -1,6 +1,14 @@
 # Offline Demo Setup (No Internet Required)
 
-This guide gets your project running 100% offline with Indic-LLaMA-7B for Hindi/Marathi responses.
+This guide gets your project running 100% offline with Indic-LLaMA-7B for Hindi/Marathi responses and Microsoft Edge TTS for voice output.
+
+## Features Working Offline
+
+✅ **Banking queries** (JSON-based, no LLM needed)  
+✅ **FAQ answers** (vector search on local embeddings)  
+✅ **Hindi/Marathi responses** (local Indic-LLaMA model)  
+✅ **Text-to-speech** (Microsoft Edge TTS, no API keys)  
+✅ **Voice recognition** (local speech-to-text)  
 
 ## One-Command Setup
 

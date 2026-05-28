@@ -149,10 +149,164 @@ body {
 .main-area {
   position: relative;
   z-index: 2;
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 22px 14px 30px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.main-content {
+  flex: 1;
   text-align: center;
+}
+
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+}
+
+/* EMI Calculator Styles */
+.emi-calculator {
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.calculator-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.calculator-header h3 {
+  margin: 0;
+  font-family: Sora, sans-serif;
+  font-size: 16px;
+}
+
+.calculator-form {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: grid;
+  gap: 4px;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.form-group input {
+  background: rgba(9, 23, 48, 0.8);
+  border: 1px solid rgba(123, 174, 255, 0.35);
+  border-radius: 8px;
+  color: #f1f6ff;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(88, 167, 255, 0.2);
+}
+
+.calculator-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.calc-btn {
+  flex: 1;
+  border-radius: 8px;
+  border: 1px solid rgba(123, 174, 255, 0.35);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.calc-btn.primary {
+  background: linear-gradient(120deg, #58a7ff, #4cf0e1);
+  color: #03284d;
+  border-color: transparent;
+}
+
+.calc-btn.primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.calc-btn.secondary {
+  background: rgba(11, 34, 74, 0.8);
+  color: #dbe9ff;
+}
+
+.calc-btn.secondary:hover {
+  border-color: rgba(76, 240, 225, 0.7);
+}
+
+.calculator-results {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.result-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.result-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+@media (max-width: 1024px) {
+  .main-area {
+    flex-direction: column;
+    max-width: 900px;
+  }
+
+  .sidebar {
+    width: 100%;
+    order: -1;
+  }
+
+  .emi-calculator {
+    max-width: 400px;
+    margin: 0 auto 20px;
+  }
+}
+
+@media (max-width: 760px) {
+  .main-area {
+    padding: 22px 14px 30px;
+  }
+
+  .emi-calculator {
+    margin-bottom: 20px;
+  }
 }
 
 .main-area.dim {

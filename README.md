@@ -11,15 +11,15 @@ Intent detection improved. Account number queries now properly use JSON data.
 ✅ **Problem 3: Works WITHOUT internet** → **FIXED**  
 Works 100% offline with local Indic-LLaMA model (no Gemini API needed).
 
-✅ **Problem 4: Long TTS responses** → **FIXED**  
-New STOP button instantly interrupts long responses.
+✅ **Problem 5: API keys required** → **FIXED**  
+Now uses Microsoft Edge TTS (offline) - no API keys needed for TTS. Works 100% offline.
 
 ## Architecture
 
 - **Banking facts layer:** Deterministic JSON lookup (account, balance, transactions, profile)
 - **FAQ layer:** Vector search over embeddings
 - **Refinement layer:** Optional local Indic-LLaMA for language polish only
-- **TTS:** gTTS with interrupt support
+- **TTS:** Microsoft Edge TTS (offline) with Indian language support - no API keys required
 
 ## LLM Enhancement (Hindi/Marathi Quality)
 

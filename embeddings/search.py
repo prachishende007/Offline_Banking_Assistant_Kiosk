@@ -45,8 +45,8 @@ for f in faqs:
     FAQ_BY_INTENT_LANG[(f["intent"], f["language"])] = f["answer"]
 
 # FAQ confidence guardrails.
-MAX_FAQ_DISTANCE = 0.95
-MIN_FAQ_DISTANCE_GAP = 0.08
+MAX_FAQ_DISTANCE = 0.85  # Lower threshold for more matches
+MIN_FAQ_DISTANCE_GAP = 0.05  # Smaller gap to be more lenient
 
 # Optional Gemini refinement (recommended for faster multilingual quality).
 GEMINI_ENABLED = os.getenv("GEMINI_ENABLED", "false").strip().lower() in {"1", "true", "yes", "on"}
@@ -148,6 +148,150 @@ def _lazy_load_indic_model():
 
 def normalize(text: str) -> str:
     return unicodedata.normalize("NFKC", text).lower().strip()
+
+
+def get_related_questions(intent: str, lang: str) -> List[str]:
+    """Generate 3 related questions based on the detected intent."""
+    related_questions = {
+        "account_balance": {
+            "en": [
+                "How can I check my account balance?",
+                "What are my recent transactions?",
+                "Is my account active?"
+            ],
+            "hi": [
+                "मैं अपना खाता बैलेंस कैसे चेक कर सकता हूँ?",
+                "मेरे हाल के लेनदेन क्या हैं?",
+                "क्या मेरा खाता सक्रिय है?"
+            ],
+            "mr": [
+                "मी माझा खाता बॅलन्स कसा चेक करू शकतो?",
+                "माझे अलीकडील व्यवहार काय आहेत?",
+                "माझे खाते सक्रिय आहे का?"
+            ]
+        },
+        "transactions": {
+            "en": [
+                "What is my account balance?",
+                "How many transactions can I see?",
+                "Can I download my statement?"
+            ],
+            "hi": [
+                "मेरा खाता बैलेंस क्या है?",
+                "मैं कितने लेनदेन देख सकता हूँ?",
+                "क्या मैं अपना स्टेटमेंट डाउनलोड कर सकता हूँ?"
+            ],
+            "mr": [
+                "माझा खाता बॅलन्स काय आहे?",
+                "मी किती व्यवहार पाहू शकतो?",
+                "मी माझे स्टेटमेंट डाउनलोड करू शकतो का?"
+            ]
+        },
+        "account_details": {
+            "en": [
+                "What is my account balance?",
+                "Is my account active?",
+                "How can I update my KYC?"
+            ],
+            "hi": [
+                "मेरा खाता बैलेंस क्या है?",
+                "क्या मेरा खाता सक्रिय है?",
+                "मैं अपना KYC कैसे अपडेट कर सकता हूँ?"
+            ],
+            "mr": [
+                "माझा खाता बॅलन्स काय आहे?",
+                "माझे खाते सक्रिय आहे का?",
+                "मी माझे KYC कसे अपडेट करू शकतो?"
+            ]
+        },
+        "user_profile": {
+            "en": [
+                "What is my account balance?",
+                "What are my account details?",
+                "Is my account active?"
+            ],
+            "hi": [
+                "मेरा खाता बैलेंस क्या है?",
+                "मेरे खाते का विवरण क्या है?",
+                "क्या मेरा खाता सक्रिय है?"
+            ],
+            "mr": [
+                "माझा खाता बॅलन्स काय आहे?",
+                "माझ्या खात्याचे तपशील काय आहेत?",
+                "माझे खाते सक्रिय आहे का?"
+            ]
+        },
+        "loan_query": {
+            "en": [
+                "What are the interest rates for loans?",
+                "What documents do I need for a loan?",
+                "How can I calculate EMI?"
+            ],
+            "hi": [
+                "लोन के लिए ब्याज दर क्या हैं?",
+                "लोन के लिए मुझे कौन से दस्तावेज चाहिए?",
+                "मैं EMI कैसे कैलकुलेट कर सकता हूँ?"
+            ],
+            "mr": [
+                "कर्जासाठी व्याज दर काय आहेत?",
+                "कर्जासाठी मला कोणते कागदपत्रे हवी आहेत?",
+                "मी EMI कसा कॅल्क्युलेट करू शकतो?"
+            ]
+        },
+        "interest_query": {
+            "en": [
+                "What are the loan interest rates?",
+                "How can I calculate EMI?",
+                "What is the minimum loan amount?"
+            ],
+            "hi": [
+                "लोन ब्याज दर क्या हैं?",
+                "मैं EMI कैसे कैलकुलेट कर सकता हूँ?",
+                "न्यूनतम लोन राशि क्या है?"
+            ],
+            "mr": [
+                "कर्ज व्याज दर काय आहेत?",
+                "मी EMI कसा कॅल्क्युलेट करू शकतो?",
+                "किमान कर्ज रक्कम किती आहे?"
+            ]
+        },
+        "kyc_update": {
+            "en": [
+                "What documents are needed for KYC?",
+                "How long does KYC update take?",
+                "Can I do KYC online?"
+            ],
+            "hi": [
+                "KYC के लिए कौन से दस्तावेज चाहिए?",
+                "KYC अपडेट में कितना समय लगता है?",
+                "क्या मैं ऑनलाइन KYC कर सकता हूँ?"
+            ],
+            "mr": [
+                "KYC साठी कोणते कागदपत्रे हवी आहेत?",
+                "KYC अपडेटमध्ये किती वेळ लागतो?",
+                "मी ऑनलाइन KYC करू शकतो का?"
+            ]
+        },
+        "general": {
+            "en": [
+                "What is my account balance?",
+                "How can I check my transactions?",
+                "What are the loan interest rates?"
+            ],
+            "hi": [
+                "मेरा खाता बैलेंस क्या है?",
+                "मैं अपने लेनदेन कैसे चेक कर सकता हूँ?",
+                "लोन ब्याज दर क्या हैं?"
+            ],
+            "mr": [
+                "माझा खाता बॅलन्स काय आहे?",
+                "मी माझे व्यवहार कसे चेक करू शकतो?",
+                "कर्ज व्याज दर काय आहेत?"
+            ]
+        }
+    }
+
+    return related_questions.get(intent, related_questions["general"]).get(lang, related_questions["general"]["en"])
 
 
 def print_help_examples() -> None:
@@ -346,16 +490,19 @@ def handoff_message(lang: str) -> str:
 def out_of_scope_message(lang: str) -> str:
     messages = {
         "en": (
-            "I can currently help with banking topics only, such as balance, transactions, account details, "
-            "KYC, and loan information. For other topics, please contact a bank officer."
+            "I specialize in banking questions. I can help you with your account balance, "
+            "transaction history, account details, KYC updates, and loan information. "
+            "What banking question can I assist you with today?"
         ),
         "hi": (
-            "मैं अभी केवल बैंकिंग विषयों में मदद कर सकता हूँ, जैसे बैलेंस, लेनदेन, खाता विवरण, "
-            "KYC और लोन जानकारी। अन्य विषयों के लिए कृपया बैंक अधिकारी से संपर्क करें।"
+            "मैं बैंकिंग प्रश्नों में विशेषज्ञ हूँ। मैं आपकी मदद कर सकता हूँ आपके खाते का बैलेंस, "
+            "लेनदेन इतिहास, खाता विवरण, KYC अपडेट और लोन जानकारी में। "
+            "आज मैं आपकी कौन सी बैंकिंग समस्या में मदद कर सकता हूँ?"
         ),
         "mr": (
-            "मी सध्या फक्त बँकिंग विषयांमध्ये मदत करू शकतो, जसे शिल्लक, व्यवहार, खाते तपशील, "
-            "KYC आणि कर्ज माहिती. इतर विषयांसाठी कृपया बँक अधिकाऱ्याशी संपर्क करा."
+            "मी बँकिंग प्रश्नांमध्ये तज्ञ आहे. मी तुम्हाला मदत करू शकतो तुमच्या खात्याची शिल्लक, "
+            "व्यवहार इतिहास, खाते तपशील, KYC अपडेट आणि कर्ज माहितीमध्ये. "
+            "आज मी तुम्हाला कोणत्या बँकिंग समस्येमध्ये मदत करू शकतो?"
         ),
     }
     return messages.get(lang, messages["en"])
@@ -364,16 +511,16 @@ def out_of_scope_message(lang: str) -> str:
 def uncertain_faq_message(lang: str) -> str:
     messages = {
         "en": (
-            "I could not find a reliable answer to that banking question. "
-            "Please rephrase your question, or I can connect you to a bank officer."
+            "I'm not entirely sure about that. Could you please rephrase your question? "
+            "For example, you can ask about your account balance, recent transactions, or account details."
         ),
         "hi": (
-            "मुझे इस बैंकिंग प्रश्न का विश्वसनीय उत्तर नहीं मिला। "
-            "कृपया प्रश्न दोबारा लिखें, या मैं आपको बैंक अधिकारी से जोड़ सकता हूँ।"
+            "मुझे इस बारे में पूरी जानकारी नहीं है। क्या आप अपना प्रश्न दोबारा कह सकते हैं? "
+            "उदाहरण के लिए, आप अपने खाते का बैलेंस, हाल के लेनदेन या खाता विवरण के बारे में पूछ सकते हैं।"
         ),
         "mr": (
-            "या बँकिंग प्रश्नासाठी मला विश्वासार्ह उत्तर मिळाले नाही. "
-            "कृपया प्रश्न पुन्हा विचारा, किंवा मी तुम्हाला बँक अधिकाऱ्याशी जोडू शकतो."
+            "त्याबद्दल मला पूर्ण माहिती नाही. तुम्ही तुमचा प्रश्न पुन्हा विचारू शकता का? "
+            "उदाहरणार्थ, तुम्ही तुमच्या खात्याची शिल्लक, अलीकडील व्यवहार किंवा खाते तपशील विचारू शकता."
         ),
     }
     return messages.get(lang, messages["en"])
@@ -620,6 +767,47 @@ def extract_answer(doc: str) -> str:
     return doc.strip()
 
 
+def get_common_banking_answer(query: str, lang: str) -> Optional[str]:
+    """Provide direct answers for very common banking questions."""
+    q = normalize(query)
+
+    # Common questions that might not be in FAQ but are frequently asked
+    common_patterns = {
+        "en": {
+            "how to check balance": "You can check your account balance by asking me 'What is my balance?' or by logging into the bank's mobile app.",
+            "how to transfer money": "To transfer money, you can use UPI, NEFT, or RTGS through the bank's app or website. For UPI transfers, you'll need the recipient's UPI ID.",
+            "how to reset pin": "To reset your ATM PIN, visit your nearest bank branch with your ID proof, or use the bank's mobile app if available.",
+            "what is upi": "UPI (Unified Payments Interface) is a real-time payment system that allows instant money transfer between bank accounts using mobile numbers or UPI IDs.",
+            "how to open account": "To open a new bank account, visit your nearest bank branch with ID proof, address proof, and passport-sized photographs.",
+            "atm limit": "Daily ATM withdrawal limits vary by account type. Savings accounts typically allow ₹40,000-₹50,000 per day.",
+        },
+        "hi": {
+            "बैलेंस कैसे चेक करें": "आप अपना खाता बैलेंस चेक करने के लिए मुझसे 'मेरा बैलेंस क्या है?' पूछ सकते हैं या बैंक की मोबाइल ऐप में लॉग इन कर सकते हैं।",
+            "पैसे कैसे ट्रांसफर करें": "पैसे ट्रांसफर करने के लिए आप UPI, NEFT या RTGS का इस्तेमाल बैंक ऐप या वेबसाइट के माध्यम से कर सकते हैं। UPI ट्रांसफर के लिए रिसीवर का UPI ID चाहिए।",
+            "पिन कैसे रीसेट करें": "ATM PIN रीसेट करने के लिए अपने नजदीकी बैंक ब्रांच जाएं ID प्रूफ लेकर, या अगर उपलब्ध हो तो बैंक की मोबाइल ऐप इस्तेमाल करें।",
+            "upi क्या है": "UPI (यूनिफाइड पेमेंट्स इंटरफेस) एक रीयल-टाइम पेमेंट सिस्टम है जो मोबाइल नंबर या UPI ID का इस्तेमाल करके बैंक खातों के बीच तुरंत पैसे ट्रांसफर करने की अनुमति देता है।",
+            "खाता कैसे खोलें": "नया बैंक खाता खोलने के लिए अपने नजदीकी बैंक ब्रांच जाएं ID प्रूफ, एड्रेस प्रूफ और पासपोर्ट साइज फोटो लेकर।",
+            "atm लिमिट": "दैनिक ATM निकासी की सीमा खाता प्रकार के अनुसार अलग-अलग होती है। सेविंग्स खाते में आमतौर पर दिन में ₹40,000-₹50,000 की अनुमति होती है।",
+        },
+        "mr": {
+            "बॅलन्स कसा चेक करावा": "तुम्ही तुमचा खाता बॅलन्स चेक करण्यासाठी मला 'माझी शिल्लक काय आहे?' विचारू शकता किंवा बँकेच्या मोबाइल अॅपमध्ये लॉग इन करू शकता.",
+            "पैसे कसे ट्रान्सफर करावे": "पैसे ट्रान्सफर करण्यासाठी तुम्ही UPI, NEFT किंवा RTGS चा वापर बँक अॅप किंवा वेबसाइटद्वारे करू शकता. UPI ट्रान्सफरसाठी रिसीव्हरचा UPI ID लागतो.",
+            "पिन कसा रीसेट करावा": "ATM PIN रीसेट करण्यासाठी तुमच्या जवळच्या बँक शाखेत जा ID प्रूफ घेऊन, किंवा उपलब्ध असल्यास बँकेची मोबाइल अॅप वापरा.",
+            "upi काय आहे": "UPI (युनिफाइड पेमेंट्स इंटरफेस) हा रिअल-टाइम पेमेंट सिस्टम आहे जो मोबाइल नंबर किंवा UPI ID वापरून बँक खात्यांदरम्यान तातडीने पैसे ट्रान्सफर करण्यास परवानगी देतो.",
+            "खाते कसे उघडावे": "नवीन बँक खाते उघडण्यासाठी तुमच्या जवळच्या बँक शाखेत जा ID प्रूफ, पत्ता प्रूफ आणि पासपोर्ट साइज फोटो घेऊन.",
+            "atm लिमिट": "दैनिक ATM पैसे काढण्याची मर्यादा खाते प्रकारानुसार वेगवेगळी असते. बचत खात्यांमध्ये सहसा दिवसाला ₹40,000-₹50,000 पर्यंत परवानगी असते.",
+        }
+    }
+
+    lang_patterns = common_patterns.get(lang, common_patterns["en"])
+
+    for pattern, answer in lang_patterns.items():
+        if pattern in q:
+            return answer
+
+    return None
+
+
 def vector_search_faq(query: str, lang: str) -> str:
     query_embedding = model.encode([query]).tolist()
 
@@ -635,10 +823,18 @@ def vector_search_faq(query: str, lang: str) -> str:
     distances = results.get("distances", [[]])[0]
 
     if not docs:
+        # Try common banking answers as fallback
+        common_answer = get_common_banking_answer(query, lang)
+        if common_answer:
+            return refine_answer(query, common_answer, lang)
         return uncertain_faq_message(lang)
 
     top_dist = distances[0] if distances else 999.0
     if top_dist > MAX_FAQ_DISTANCE:
+        # Try common banking answers before giving up
+        common_answer = get_common_banking_answer(query, lang)
+        if common_answer:
+            return refine_answer(query, common_answer, lang)
         return uncertain_faq_message(lang)
 
     # If top candidates are too close but represent different intents, avoid random answer.
@@ -647,6 +843,10 @@ def vector_search_faq(query: str, lang: str) -> str:
         top_intent = metas[0].get("intent")
         second_intent = metas[1].get("intent")
         if top_intent != second_intent and gap < MIN_FAQ_DISTANCE_GAP:
+            # Try common banking answers before uncertain message
+            common_answer = get_common_banking_answer(query, lang)
+            if common_answer:
+                return refine_answer(query, common_answer, lang)
             return uncertain_faq_message(lang)
 
     # Prefer same-language answer with good distance.
@@ -672,34 +872,55 @@ def vector_search_faq(query: str, lang: str) -> str:
     if lang_docs and lang_distances and lang_distances[0] <= MAX_FAQ_DISTANCE:
         return refine_answer(query, extract_answer(lang_docs[0]), lang)
 
+    # Final fallback: common banking answers
+    common_answer = get_common_banking_answer(query, lang)
+    if common_answer:
+        return refine_answer(query, common_answer, lang)
+
     return uncertain_faq_message(lang)
 
 
-def answer_query(user: dict, query: str, lang_hint: Optional[str] = None) -> str:
+def answer_query(user: dict, query: str, lang_hint: Optional[str] = None) -> Tuple[str, List[str]]:
     lang = lang_hint if lang_hint in {"en", "hi", "mr"} else detect_language(query)
     intent = detect_intent(query)
     user_id = user["user_id"]
 
     # Deterministic intents: NEVER refine with LLM for banking facts to prevent hallucination.
     if intent == "account_balance":
-        return get_balance(user_id, lang)
+        answer = get_balance(user_id, lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
     if intent == "transactions":
-        return get_transactions(user_id, lang)
+        answer = get_transactions(user_id, lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
     if intent == "account_details":
-        return get_account_details(user_id, lang)
+        answer = get_account_details(user_id, lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
     if intent == "account_status":
-        return get_account_status(lang)
+        answer = get_account_status(lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
     if intent == "user_profile":
-        return get_user_profile(user, lang)
+        answer = get_user_profile(user, lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
 
     # For FAQ/general banking queries, use vector search with optional LLM refinement.
     if intent != "general":
-        return refine_answer(query, vector_search_faq(query, lang), lang)
+        answer = refine_answer(query, vector_search_faq(query, lang), lang)
+        related = get_related_questions(intent, lang)
+        return answer, related
 
     if not is_bank_related(query):
-        return out_of_scope_message(lang)
+        answer = out_of_scope_message(lang)
+        related = get_related_questions("general", lang)
+        return answer, related
 
-    return refine_answer(query, vector_search_faq(query, lang), lang)
+    answer = refine_answer(query, vector_search_faq(query, lang), lang)
+    related = get_related_questions("general", lang)
+    return answer, related
 
 
 def run_cli() -> None:

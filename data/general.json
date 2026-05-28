@@ -3118,5 +3118,143 @@
     "language": "en",
     "question": "need help net_banking_reset now",
     "answer": "Use forgot password option in net banking and complete OTP verification."
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "en",
+    "question": "Tell me about home loan",
+    "answer": "Our Home Loan offers interest rates between 8.5% and 9.5% per annum. You can borrow from ₹1,00,000 up to ₹1,00,00,000 with a tenure of 5 to 30 years. Processing fee is 0.5% of loan amount. For example, a ₹50 lakh loan at 8.5% for 20 years has an EMI of approximately ₹43,391. Required documents: Aadhaar, PAN, salary slips/ITR, 6-month bank statement, and property documents."
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "en",
+    "question": "What is the interest rate for home loan?",
+    "answer": "Home loan interest rates: Standard – 8.5% to 9.5%, Senior Citizens – 8.25% to 9.25%, Female borrowers – 8.3% to 9.3%. Minimum income required is ₹25,000/month and a credit score of 750+ is preferred."
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "en",
+    "question": "I want a home loan",
+    "answer": "Great! Our Home Loan is available from ₹1 lakh to ₹1 crore at interest rates starting at 8.5% p.a. Tenure up to 30 years. For a ₹50 lakh loan at 8.5% over 20 years, your EMI would be approx. ₹43,391/month. Eligibility: Age 21–65 years, income ≥ ₹25,000/month, credit score 750+. Would you like me to calculate the EMI for your desired loan amount?"
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "hi",
+    "question": "होम लोन के बारे में बताएं",
+    "answer": "हमारा होम लोन 8.5% से 9.5% प्रति वर्ष ब्याज दर पर उपलब्ध है। ₹1 लाख से ₹1 करोड़ तक लोन, 5 से 30 साल की अवधि। प्रोसेसिंग शुल्क 0.5%। उदाहरण: ₹50 लाख का लोन 8.5% पर 20 साल के लिए — EMI लगभग ₹43,391/माह। जरूरी दस्तावेज: आधार, PAN, सैलरी स्लिप/ITR, 6 माह का बैंक स्टेटमेंट, प्रॉपर्टी दस्तावेज।"
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "hi",
+    "question": "मुझे होम लोन चाहिए",
+    "answer": "हमारा होम लोन 8.5% से शुरू होने वाली ब्याज दर पर उपलब्ध है। ₹1 लाख से ₹1 करोड़ तक लोन मिल सकता है, अधिकतम 30 साल की अवधि। ₹50 लाख के लोन पर 20 साल में EMI लगभग ₹43,391 होगी। पात्रता: आयु 21–65, आय ₹25,000+/माह, क्रेडिट स्कोर 750+।"
+  },
+  {
+    "intent": "home_loan_details",
+    "language": "mr",
+    "question": "होम लोन बद्दल सांगा",
+    "answer": "आमचे होम लोन 8.5% ते 9.5% व्याज दराने उपलब्ध आहे. ₹1 लाख ते ₹1 कोटी पर्यंत कर्ज, 5 ते 30 वर्षांसाठी. प्रक्रिया शुल्क 0.5%. उदाहरण: ₹50 लाख कर्ज 8.5% वर 20 वर्षांसाठी — EMI अंदाजे ₹43,391/महिना. आवश्यक कागदपत्रे: आधार, PAN, पगार स्लिप/ITR, 6 महिन्यांचे बँक स्टेटमेंट, मालमत्ता कागदपत्रे."
+  },
+  {
+    "intent": "personal_loan_details",
+    "language": "en",
+    "question": "Tell me about personal loan",
+    "answer": "Our Personal Loan offers interest rates between 10.5% and 16% per annum. Loan amount: ₹50,000 to ₹20,00,000. Tenure: 1 to 5 years. Processing fee: 1–2%. No collateral required. Quick approval within 24 hours. Minimum income: ₹20,000/month, credit score 700+."
+  },
+  {
+    "intent": "personal_loan_details",
+    "language": "hi",
+    "question": "पर्सनल लोन के बारे में बताएं",
+    "answer": "पर्सनल लोन 10.5% से 16% ब्याज दर पर उपलब्ध है। राशि ₹50,000 से ₹20 लाख। अवधि 1 से 5 साल। कोई गारंटी नहीं चाहिए। 24 घंटे में मंजूरी। न्यूनतम आय ₹20,000/माह, क्रेडिट स्कोर 700+।"
+  },
+  {
+    "intent": "personal_loan_details",
+    "language": "mr",
+    "question": "पर्सनल लोन बद्दल सांगा",
+    "answer": "पर्सनल लोन 10.5% ते 16% व्याज दराने उपलब्ध आहे. रक्कम ₹50,000 ते ₹20 लाख. कालावधी 1 ते 5 वर्षे. तारण नको. 24 तासांत मंजुरी. किमान उत्पन्न ₹20,000/महिना, क्रेडिट स्कोर 700+."
+  },
+  {
+    "intent": "education_loan_details",
+    "language": "en",
+    "question": "Tell me about education loan",
+    "answer": "Our Education Loan is available at 7% to 10% per annum for up to ₹20,00,000. Features include moratorium period during study (no EMI while studying), covers tuition + living expenses, and government subsidy schemes are available."
+  },
+  {
+    "intent": "education_loan_details",
+    "language": "hi",
+    "question": "एजुकेशन लोन बताएं",
+    "answer": "एजुकेशन लोन 7% से 10% ब्याज दर पर ₹20 लाख तक उपलब्ध है। पढ़ाई के दौरान EMI नहीं। ट्यूशन + रहने का खर्च कवर। सरकारी सब्सिडी स्कीम भी लागू।"
+  },
+  {
+    "intent": "emi_calculator",
+    "language": "en",
+    "question": "How to calculate EMI?",
+    "answer": "EMI formula: EMI = P × R × (1+R)^N / ((1+R)^N - 1), where P = Principal, R = Monthly interest rate (annual rate / 12 / 100), N = Tenure in months. Example 1: ₹10 lakh at 8.5% for 10 years → EMI ≈ ₹12,399/month. Example 2: ₹5 lakh at 9% for 5 years → EMI ≈ ₹10,379/month. Use our EMI Calculator on the right panel for instant calculation!"
+  },
+  {
+    "intent": "emi_calculator",
+    "language": "hi",
+    "question": "EMI कैसे निकालें?",
+    "answer": "EMI फार्मूला: EMI = P × R × (1+R)^N / ((1+R)^N - 1)। जहाँ P = मूलधन, R = मासिक ब्याज दर, N = महीनों में अवधि। उदाहरण: ₹10 लाख पर 8.5% पर 10 साल = EMI ₹12,399/माह। हमारे EMI कैलकुलेटर का उपयोग करें!"
+  },
+  {
+    "intent": "emi_calculator",
+    "language": "mr",
+    "question": "EMI कसे काढायचे?",
+    "answer": "EMI सूत्र: EMI = P × R × (1+R)^N / ((1+R)^N - 1). उदाहरण: ₹10 लाख 8.5% वर 10 वर्षांसाठी → EMI ≈ ₹12,399/महिना. आमचा EMI कॅल्क्युलेटर वापरा!"
+  },
+  {
+    "intent": "fd_rates",
+    "language": "en",
+    "question": "What are fixed deposit interest rates?",
+    "answer": "Fixed Deposit rates: 1 year – 6.5% p.a., 5 years – 7.0% p.a. Senior citizens get an additional 0.5% on all FD tenures. Savings account interest: 3.5% p.a."
+  },
+  {
+    "intent": "fd_rates",
+    "language": "hi",
+    "question": "FD की ब्याज दरें क्या हैं?",
+    "answer": "फिक्स्ड डिपॉजिट दरें: 1 साल – 6.5%, 5 साल – 7.0%। वरिष्ठ नागरिकों को 0.5% अतिरिक्त। बचत खाता – 3.5% प्रति वर्ष।"
+  },
+  {
+    "intent": "fd_rates",
+    "language": "mr",
+    "question": "FD व्याज दर काय आहे?",
+    "answer": "फिक्स्ड डिपॉझिट दर: 1 वर्ष – 6.5%, 5 वर्षे – 7.0%. ज्येष्ठ नागरिकांना 0.5% अतिरिक्त. बचत खाते – 3.5% प्रतिवर्ष."
+  },
+  {
+    "intent": "pmay_scheme",
+    "language": "en",
+    "question": "Tell me about Pradhan Mantri Awas Yojana",
+    "answer": "Pradhan Mantri Awas Yojana (PMAY) offers an interest subsidy of up to 6.5% on home loans for eligible beneficiaries with annual income up to ₹18 lakh. This significantly reduces your EMI. Ask our loan advisor for PMAY eligibility check."
+  },
+  {
+    "intent": "pmay_scheme",
+    "language": "hi",
+    "question": "प्रधानमंत्री आवास योजना के बारे में बताएं",
+    "answer": "प्रधानमंत्री आवास योजना (PMAY) में ₹18 लाख तक की वार्षिक आय वाले लोगों को होम लोन पर 6.5% तक ब्याज सब्सिडी मिलती है। इससे EMI काफी कम हो जाती है।"
+  },
+  {
+    "intent": "kisan_credit",
+    "language": "en",
+    "question": "Tell me about Kisan Credit Card",
+    "answer": "Kisan Credit Card offers agriculture loans at just 4% interest (with government subsidy). It provides revolving credit for farming needs, crop insurance, and post-harvest expenses."
+  },
+  {
+    "intent": "loan_eligibility",
+    "language": "en",
+    "question": "Am I eligible for a home loan?",
+    "answer": "Home loan eligibility: Age 21–65 years, minimum monthly income ₹25,000, credit score 750+, employment type: salaried or self-employed. Documents: Aadhaar, PAN, income proof (salary slip/ITR), 6-month bank statement, property documents."
+  },
+  {
+    "intent": "loan_eligibility",
+    "language": "hi",
+    "question": "होम लोन के लिए पात्रता क्या है?",
+    "answer": "होम लोन पात्रता: आयु 21–65 वर्ष, न्यूनतम आय ₹25,000/माह, क्रेडिट स्कोर 750+, नौकरीपेशा या स्वरोजगार। दस्तावेज: आधार, PAN, आय प्रमाण, 6 माह बैंक स्टेटमेंट, प्रॉपर्टी दस्तावेज।"
+  },
+  {
+    "intent": "loan_eligibility",
+    "language": "mr",
+    "question": "होम लोनसाठी पात्रता काय आहे?",
+    "answer": "होम लोन पात्रता: वय 21–65 वर्षे, किमान उत्पन्न ₹25,000/महिना, क्रेडिट स्कोर 750+, नोकरदार किंवा स्वयंरोजगार. कागदपत्रे: आधार, PAN, उत्पन्न पुरावा, 6 महिन्यांचे बँक स्टेटमेंट, मालमत्ता कागदपत्रे."
   }
 ]

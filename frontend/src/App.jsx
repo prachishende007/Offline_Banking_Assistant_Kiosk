@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Header from "./components/Header";
 import VoiceOrb from "./components/VoiceOrb";
 import SuggestionChips from "./components/SuggestionChips";
+import EMICalculator from "./components/EMICalculator";
 import { getTtsAudio, loginByMobile, logoutUser, processText } from "./services/api";
 
 const HEADING = {
@@ -28,6 +29,7 @@ export default function App() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
+  const [relatedQuestions, setRelatedQuestions] = useState([]);
   const audioRef = useRef(null);
   const recognitionRef = useRef(null);
   const recognitionSupported = useMemo(
@@ -97,6 +99,15 @@ export default function App() {
       const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
       if (!transcript) {
         setAssistantState("idle");
+        addMessage(
+          "assistant",
+          language === "hi"
+            ? "माफ़ कीजिए, मैं आपकी बात स्पष्ट नहीं सुन पाया। कृपया धीरे और स्पष्ट बोलें।"
+            : language === "mr"
+            ? "क्षमा असा, मी तुमची बोलणी स्पष्ट ऐकू शकलो नाही. कृपया हळू आणि स्पष्ट बोला."
+            : "Sorry, I couldn't understand what you said. Please speak clearly and try again.",
+          language
+        );
         return;
       }
 
@@ -109,10 +120,10 @@ export default function App() {
       addMessage(
         "assistant",
         language === "hi"
-          ? "माइक से आवाज़ नहीं मिली। कृपया फिर कोशिश करें।"
+          ? "क्षमा करें, मैं आपकी आवाज़ सुन नहीं पाया। कृपया सुनिश्चित करें कि माइक चालू है और फिर से बोलें। आप टेक्स्ट में भी अपना प्रश्न लिख सकते हैं।"
           : language === "mr"
-          ? "माइकवर आवाज मिळाली नाही. कृपया पुन्हा प्रयत्न करा."
-          : "Mic did not capture voice. Please try again.",
+          ? "क्षमा असा, मी तुमची आवाज ऐकू शकलो नाही. कृपया माइक चालू असल्याची खात्री करा आणि पुन्हा बोला. तुम्ही तुमचा प्रश्न मजकूरात लिहू शकता."
+          : "Sorry, I couldn't hear you clearly. Please make sure your microphone is on and try speaking again. You can also type your question in the text box.",
         language
       );
     };
@@ -146,7 +157,7 @@ export default function App() {
     try {
       const result = await loginByMobile(loginPhone);
       setIsLoggedIn(true);
-      addMessage("assistant", `Welcome ${result.user?.name || "User"}. Ask your banking question.`, language);
+      addMessage("assistant", `Welcome ${result.user?.name || "User"}! I'm here to help with your banking questions. You can ask me about your account balance, recent transactions, or any other banking queries.`, language);
     } catch (err) {
       setLoginError(err.message || "Login failed");
     } finally {
@@ -165,7 +176,9 @@ export default function App() {
       const result = await processText(text.trim(), language);
       const reply = result.response_text || "Please try again.";
       const lang = result.language || language;
+      const related = result.related_questions || [];
       addMessage("assistant", reply, lang);
+      setRelatedQuestions(related);
       setAssistantState("speaking");
       await playTts(reply, lang);
     } catch (err) {
@@ -184,6 +197,7 @@ export default function App() {
     setIsLoggedIn(false);
     setMessages([]);
     setInputText("");
+    setRelatedQuestions([]);
     setAssistantState("idle");
   };
 
@@ -216,88 +230,96 @@ export default function App() {
       )}
 
       <main className={`main-area ${!isLoggedIn ? "dim" : ""}`}>
-        <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {welcomeText}
-        </motion.h2>
-        <p className="sub">{subText}</p>
+        <div className="main-content">
+          <motion.h2 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            {welcomeText}
+          </motion.h2>
+          <p className="sub">{subText}</p>
 
-        <VoiceOrb
-          state={assistantState}
-          onClick={() => {
-            if (!isLoggedIn) {
-              return;
-            }
-            if (assistantState === "speaking") {
-              stopAudio();
-              setAssistantState("idle");
-              return;
-            }
+          <VoiceOrb
+            state={assistantState}
+            onClick={() => {
+              if (!isLoggedIn) {
+                return;
+              }
+              if (assistantState === "speaking") {
+                stopAudio();
+                setAssistantState("idle");
+                return;
+              }
 
-            if (!recognitionSupported || !recognitionRef.current) {
-              addMessage(
-                "assistant",
-                language === "hi"
-                  ? "आपके ब्राउज़र में voice input supported नहीं है।"
-                  : language === "mr"
-                  ? "तुमच्या ब्राउझरमध्ये voice input supported नाही."
-                  : "Voice input is not supported in this browser.",
-                language
-              );
-              return;
-            }
+              if (!recognitionSupported || !recognitionRef.current) {
+                addMessage(
+                  "assistant",
+                  language === "hi"
+                    ? "आपके ब्राउज़र में voice input supported नहीं है।"
+                    : language === "mr"
+                    ? "तुमच्या ब्राउझरमध्ये voice input supported नाही."
+                    : "Voice input is not supported in this browser.",
+                  language
+                );
+                return;
+              }
 
-            if (assistantState === "listening") {
-              recognitionRef.current.stop();
-              return;
-            }
+              if (assistantState === "listening") {
+                recognitionRef.current.stop();
+                return;
+              }
 
-            recognitionRef.current.lang = language === "hi" ? "hi-IN" : language === "mr" ? "mr-IN" : "en-IN";
-            try {
-              recognitionRef.current.start();
-            } catch {
-              setAssistantState("idle");
-            }
-          }}
-        />
+              recognitionRef.current.lang = language === "hi" ? "hi-IN" : language === "mr" ? "mr-IN" : "en-IN";
+              try {
+                recognitionRef.current.start();
+              } catch {
+                setAssistantState("idle");
+              }
+            }}
+          />
 
-        <div className="status-line">
-          <span className={`dot ${assistantState}`} />
-          <span>{assistantState === "idle" ? "Ready" : assistantState}</span>
-          {isLoggedIn ? (
-            <button className="logout" onClick={handleLogout}>
-              <LogOut size={14} />
-              Logout
-            </button>
-          ) : null}
+          <div className="status-line">
+            <span className={`dot ${assistantState}`} />
+            <span>{assistantState === "idle" ? "Ready" : assistantState}</span>
+            {isLoggedIn ? (
+              <button className="logout" onClick={handleLogout}>
+                <LogOut size={14} />
+                Logout
+              </button>
+            ) : null}
+          </div>
+
+          <SuggestionChips language={language} onPick={ask} suggestions={relatedQuestions} />
+
+          <div className="chat-panel glass-card">
+            <div className="chat-list">
+              {messages.map((m) => (
+                <div key={m.id} className={`bubble ${m.role}`}>
+                  {m.content}
+                </div>
+              ))}
+            </div>
+            <div className="chat-input-wrap">
+              <button className="icon-btn" type="button" title="Mic placeholder">
+                <Mic size={16} />
+              </button>
+              <input
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder={language === "hi" ? "अपना प्रश्न लिखें" : language === "mr" ? "तुमचा प्रश्न लिहा" : "Type your question"}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") ask(inputText);
+                }}
+              />
+              <button className="icon-btn send" type="button" onClick={() => ask(inputText)}>
+                <Send size={16} />
+              </button>
+            </div>
+          </div>
         </div>
 
-        <SuggestionChips language={language} onPick={ask} />
-
-        <div className="chat-panel glass-card">
-          <div className="chat-list">
-            {messages.map((m) => (
-              <div key={m.id} className={`bubble ${m.role}`}>
-                {m.content}
-              </div>
-            ))}
-          </div>
-          <div className="chat-input-wrap">
-            <button className="icon-btn" type="button" title="Mic placeholder">
-              <Mic size={16} />
-            </button>
-            <input
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder={language === "hi" ? "अपना प्रश्न लिखें" : language === "mr" ? "तुमचा प्रश्न लिहा" : "Type your question"}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") ask(inputText);
-              }}
-            />
-            <button className="icon-btn send" type="button" onClick={() => ask(inputText)}>
-              <Send size={16} />
-            </button>
-          </div>
-        </div>
+        {isLoggedIn && (
+          <aside className="sidebar">
+            <EMICalculator language={language} />
+          </aside>
+        )}
       </main>
     </div>
   );

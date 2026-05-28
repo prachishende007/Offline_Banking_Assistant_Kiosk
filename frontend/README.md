@@ -1,6 +1,13 @@
 # Frontend (React + Vite)
 
-This is the React frontend for AI Bank Assistance.
+This is the React frontend for AI Bank Assistance with voice interaction and EMI calculator.
+
+## Features
+
+- **Voice Assistant**: Multilingual voice interaction (English, Hindi, Marathi)
+- **EMI Calculator**: Calculate loan EMIs with principal, interest rate, and tenure
+- **Chat Interface**: Text-based banking queries
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Local Setup
 

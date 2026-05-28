@@ -1,202 +1,137 @@
 # AI Bank Assistance - Offline-First Banking Assistant
 
-## ⚠️ CRITICAL SAFETY GUARANTEES (Your Issues Fixed)
+## Overview
+AI Bank Assistance is a multilingual banking assistant that answers account and FAQ queries in English, Hindi, and Marathi.
 
-✅ **Problem 1: Random answers** → **FIXED**  
-Banking facts (account number, balance, transactions) **ALWAYS come from JSON**, never from LLM hallucination.
+It combines:
+- Deterministic banking data from local JSON files
+- Vector search over FAQ embeddings
+- Optional LLM polish via Gemini or Indic-LLaMA
+- Flask backend APIs and two UI options
 
-✅ **Problem 2: Account details not working** → **FIXED**  
-Intent detection improved. Account number queries now properly use JSON data.
+## What changed
+- Banking facts are always loaded from local JSON data
+- Account and transaction queries are deterministic
+- Offline TTS support via `edge-tts`
+- Frontend can run in the browser using the Flask UI or React + Vite
 
-✅ **Problem 3: Works WITHOUT internet** → **FIXED**  
-Works 100% offline with local Indic-LLaMA model (no Gemini API needed).
+## Prerequisites
+- Python 3.10+
+- pip
+- Node.js 18+ only if you want to run the React frontend in `frontend/`
 
-✅ **Problem 5: API keys required** → **FIXED**  
-Now uses Microsoft Edge TTS (offline) - no API keys needed for TTS. Works 100% offline.
+> If `node --version` or `npm --version` fails, install Node.js from https://nodejs.org and restart your terminal.
 
-## Architecture
+## Quick Start: Backend only
+This is the easiest way to run the app if you do not have Node.js installed.
 
-- **Banking facts layer:** Deterministic JSON lookup (account, balance, transactions, profile)
-- **FAQ layer:** Vector search over embeddings
-- **Refinement layer:** Optional local Indic-LLaMA for language polish only
-- **TTS:** Microsoft Edge TTS (offline) with Indian language support - no API keys required
-
-## LLM Enhancement (Hindi/Marathi Quality)
-
-This project now supports two optional refinement modes for better natural Hindi/Marathi output:
-- **Gemini (recommended):** best speed/quality tradeoff for hackathon demos.
-- **Indic-LLaMA-7B (optional):** local model path, better when you have strong GPU resources and want offline-ish control.
-
-### Which one should you use?
-- Use **Gemini** for fastest and most reliable upgrade right now.
-- Use **Indic-LLaMA-7B** only if you have enough compute and want local inference.
-
-## Offline First (Recommended For Your Next Trial)
-
-Use this section if you want to run without internet dependency on Gemini.
-
-### 1) Install dependencies
-
+1) Install Python dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2) Configure offline mode (PowerShell)
-
-```powershell
-$env:GEMINI_ENABLED="false"
-$env:INDIC_LLM_ENABLED="true"
-$env:INDIC_LLM_MODEL="ai4bharat/Indic-LLaMA-7B"
-$env:INDIC_LLM_DEVICE="cpu"   # set "cuda" if GPU is available
-```
-
-### 3) Start backend
-
+2) Run the backend:
 ```bash
 python app.py
 ```
 
-### 4) Verify active mode
+3) Open the app in your browser:
+- `http://127.0.0.1:5000`
 
+This uses the Flask-served UI in `web/templates` and `web/static`.
+
+## Full Setup: React frontend
+If you want the React/Vite UI, you must install Node.js/npm first.
+
+1) Install Node.js
+- Download and install the LTS version from: https://nodejs.org
+- Or use Windows package manager:
+  ```powershell
+  winget install OpenJS.NodeJS
+  ```
+
+2) Verify Node is installed:
+```bash
+node --version
+npm --version
+```
+
+3) Install frontend dependencies:
+```bash
+cd frontend
+npm install
+```
+
+4) Start backend in the project root:
+```bash
+python app.py
+```
+
+5) Start the React frontend:
+```bash
+cd frontend
+npm run dev
+```
+
+6) Open the frontend in your browser:
+- `http://127.0.0.1:3000`
+
+The React app proxies API calls to the backend at `http://127.0.0.1:5000`.
+
+## Environment modes
+The app supports two optional refinement modes:
+
+### Gemini mode (recommended)
+```powershell
+$env:GEMINI_ENABLED="true"
+$env:GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
+$env:GEMINI_MODEL="gemini-1.5-flash"
+```
+
+### Indic-LLaMA mode (offline)
+```powershell
+$env:GEMINI_ENABLED="false"
+$env:INDIC_LLM_ENABLED="true"
+$env:INDIC_LLM_MODEL="ai4bharat/Indic-LLaMA-7B"
+$env:INDIC_LLM_DEVICE="cpu"
+```
+
+> CPU inference for a 7B model may be slow. Use `cuda` only if you have a compatible NVIDIA GPU.
+
+## Run backend with chosen mode
+```bash
+python app.py
+```
+
+## Verify backend status
 Open:
+- `http://127.0.0.1:5000/api/health`
 - `http://127.0.0.1:5000/api/model-status`
 
-Expected (offline):
-- `configured_mode` should be `indic-llama`
+## Folder structure
+- `app.py`: Flask backend and API routes
+- `data/`: demo JSON data for users, accounts, transactions, and general FAQ
+- `embeddings/`: embedding creation and search logic
+- `web/`: Flask-rendered UI templates and static files
+- `frontend/`: React + Vite frontend UI
 
-### 5) Run frontend
+## Notes
+- `python -m venv .venv` only manages Python dependencies. It does not install Node or npm.
+- If `npm` is not recognized, install Node.js and restart your terminal.
+- The backend can run independently of the React frontend.
 
+## Useful commands
+Backend only:
+```bash
+pip install -r requirements.txt
+python app.py
+```
+
+Frontend setup (after Node install):
 ```bash
 cd frontend
 npm install
 npm run dev
-```
-
-### Offline note
-
-The local model is loaded lazily on first chat request. CPU inference can be slow for a 7B model.
-
-### A) Gemini setup (recommended)
-
-1. Install dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-2. Set environment variables (PowerShell):
-  ```powershell
-  $env:GEMINI_ENABLED="true"
-  $env:GEMINI_API_KEY="YOUR_GEMINI_API_KEY"
-  $env:GEMINI_MODEL="gemini-1.5-flash"
-  ```
-
-3. Start backend:
-  ```bash
-  python app.py
-  ```
-
-### B) Indic-LLaMA-7B setup (optional)
-
-1. Install dependencies:
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-2. Set environment variables (PowerShell):
-  ```powershell
-  $env:INDIC_LLM_ENABLED="true"
-  $env:INDIC_LLM_MODEL="ai4bharat/Indic-LLaMA-7B"
-  $env:INDIC_LLM_DEVICE="cpu"   # set "cuda" if NVIDIA GPU is available
-  ```
-
-3. Start backend:
-  ```bash
-  python app.py
-  ```
-
-### Optional: GPU acceleration for Indic-LLaMA
-
-If you have NVIDIA GPU:
-```powershell
-$env:INDIC_LLM_DEVICE="cuda"
-pip install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
-### Fallback behavior
-
-If Gemini/Indic-LLaMA is not configured or fails, assistant falls back to deterministic banking answers.
-
----
-
-AI Bank Assistance is a multilingual banking assistant that answers account and FAQ queries in English, Hindi, and Marathi.
-
-It combines:
-- Retrieval over banking FAQ data using embeddings (ChromaDB + sentence-transformers)
-- Rule/intention handling for account details and transaction summaries
-- Flask APIs for login, chat, and text-to-speech
-- Two UI options:
-  - Server-rendered web UI in `web/`
-  - React + Vite frontend in `frontend/`
-
-## Project Details
-
-### Core capabilities
-- Mobile-number-based login using local demo user data
-- Personalized answers using user, account, and transaction JSON datasets
-- Language detection (`en`, `hi`, `mr`) and language-aware responses
-- Text-to-speech response audio via gTTS
-- FAQ retrieval powered by vector search over embedded content
-
-### Main modules
-- `app.py`: Flask backend and API routes
-- `data/`: source JSON data (`users`, `accounts`, `transactions`, `general`)
-- `embeddings/search.py`: intent + vector retrieval pipeline
-- `embeddings/create_embeddings.py`: script to create/update embeddings in ChromaDB
-- `web/`: Flask template/static UI
-- `frontend/`: React + Vite UI (dev server + API proxy)
-
-### API endpoints
-- `GET /api/health`
-- `POST /api/login`
-- `POST /api/logout`
-- `POST /api/chat`
-- `POST /api/tts`
-
-## Setup Info
-
-### 1) Prerequisites
-- Python 3.10+ (recommended)
-- Node.js 18+ (only for React frontend)
-- pip
-
-### 2) Clone project
-```bash
-git clone https://github.com/Rohit-TecH306/CodeApex_2.0.git
-cd CodeApex_2.0
-```
-
-### 3) Create and activate Python virtual environment
-
-Windows (PowerShell):
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-```
-
-macOS/Linux:
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-### 4) Install backend dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 5) Build or refresh embeddings (first time or after data changes)
-```bash
-python embeddings/create_embeddings.py
 ```
 
 This creates/updates vector data under `embeddings/db/`.
